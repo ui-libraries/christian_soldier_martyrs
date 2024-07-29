@@ -7,10 +7,10 @@
   <!-- Add a title to the page -->
   <title>Martyrdom of the Saints</title>
 
-  <!-- link to Nanum Myeongjo and Albert Sans fonts -->
+  <!-- link to Cormorant Garamond and Albert Sans fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Nanum+Myeongjo&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
 
   <!-- leaflet css -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
@@ -101,7 +101,7 @@
     }
 
     h3 {
-      font-family: "Nanum Myeongjo", serif;
+      font-family: "Cormorant Garamond", serif;
       font-weight: 400;
       font-size: 14px;
       text-transform: uppercase;
@@ -112,13 +112,13 @@
     }
 
     h4 {
-      font-family: "Nanum Myeongjo", serif;
+      font-family: "Cormorant Garamond", serif;
       font-weight: 400;
       font-size: 14px;
     }    
 
     h5 {
-      font-family: "Nanum Myeongjo", serif;
+      font-family: "Cormorant Garamond", serif;
       font-weight: 400;
       font-size: 14px;
       margin: 0px;
@@ -145,7 +145,7 @@
     /* sidebar header */
     .sidebar-header {
       width: 100%;
-      font-family: "Nanum Myeongjo", serif;
+      font-family: "Cormorant Garamond", serif;
       font-weight: 400;
       font-style: normal;
       text-transform: uppercase;
@@ -159,10 +159,10 @@
     /* sidebar about heading */
     .about {
       color: rgb(0, 0, 0);
-      font-family: "Nanum Myeongjo", serif;
+      font-family: "Cormorant Garamond", serif;
       font-weight: 400;
       font-style: normal;
-      font-size: 16px;
+      font-size: 18px;
       margin-bottom: 0px;
       margin-top: 0px;
       margin-left: 0px;
@@ -171,10 +171,10 @@
     /* selection heading */
     .choose {
       color: rgb(0, 0, 0);
-      font-family: "Nanum Myeongjo", serif;
+      font-family: "Cormorant Garamond", serif;
       font-weight: 400;
       font-style: normal;
-      font-size: 16px;
+      font-size: 18px;
       margin-bottom: 0px;
       margin-top: 0px;
       margin-left: 0px;
@@ -229,6 +229,58 @@
     #collapseButton .icon {
       margin-right: 5px;
     }
+
+    /* Set the styles for the temporal slider container */
+    #temporal-slider-container {
+      display: flex;
+      align-items: center;
+      width: 250px;
+      /* Increase this value as needed */
+      height: 40px;
+      /* Adjust height if necessary */
+      padding: 10px;
+    }
+
+    /* Set temporal legend styles */
+    #temporal {
+      height: 25px;
+      width: 86px;
+      background-color: #FFFFFF;
+      border-radius: 3px;
+      box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+    }
+
+    /* Set the styles for the text span in the temporal legend */
+    #temporal span {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      margin-left: 10px;
+    }
+
+    /* Set time slider styles */
+    #slider {
+      height: 25px;
+      margin-left: 10px;
+      background-color: #FFFFFF;
+      border-radius: 3px;
+      box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .slider {
+      -webkit-appearance: none;
+      width: 154px;
+      height: 5px;
+      background: #ddd;
+      outline: none;
+      opacity: 0.7;
+      transition: opacity .2s;
+    }
+
+    .slider:hover {
+      opacity: 1;
+    }    
 
     /* End custom sidebar css */
   </style>
@@ -383,6 +435,13 @@
     const info = document.getElementById('content-info');
     // Define the name dropdown menu
     const nameSelect = document.getElementById('name-select');
+
+    // Define an empty array to store the years
+    const years = [];
+
+    // Define the value in the slider
+    let currentYear = $('.slider').val();
+
     // Load the data asynchronously
     d3.queue()
       // Load the data/martyrs.csv data
@@ -406,7 +465,8 @@
             location: d.Place_of_Martyrdom + ', ' + d.Region_of_Martyrdom,
             death_max: d.Death_Not_After,
             death_min: d.Death_Not_Before,
-            gender: d.Gender
+            gender: d.Gender,
+            language: d.Language
           },
           geometry: {
             type: 'Point',
@@ -433,8 +493,11 @@
         onEachFeature: function(feature, layer) {
           // Push the name of the martyr to the names array
           names.push(feature.properties.name);
+          // Define the minimum and maximum years
+          const minYear = parseInt(feature.properties.death_min);
+          const maxYear = parseInt(feature.properties.death_max);
           // Add a tooltip to each marker to display the translators' names
-          layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' AD</h6>');
+          layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' AD<br>' + feature.properties.language + '</h6>');
           // On mouseover, change the marker color
           layer.on('mouseover', function(e) {
             // Change the marker color
