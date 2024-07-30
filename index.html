@@ -115,7 +115,7 @@
       font-family: "Cormorant Garamond", serif;
       font-weight: 400;
       font-size: 14px;
-    }    
+    }
 
     h5 {
       font-family: "Cormorant Garamond", serif;
@@ -230,6 +230,7 @@
       margin-right: 5px;
     }
 
+    /* TEMPORAL SLIDER CSS */
     /* Set the styles for the temporal slider container */
     #temporal-slider-container {
       display: flex;
@@ -280,7 +281,9 @@
 
     .slider:hover {
       opacity: 1;
-    }    
+    }
+
+    /* END TEMPORAL SLIDER CSS */
 
     /* End custom sidebar css */
   </style>
@@ -344,6 +347,22 @@
   </div>
   <!-- map -->
   <div id="map"></div>
+
+  <!-- TEMPORAL SLIDER -->
+  <!-- Temporal legend and slider container -->
+  <div id="temporal-slider-container">
+    <!-- Temporal legend -->
+    <div id="temporal">
+      <h5 class="txt-bold"><span id="span"></span></h5>
+    </div>
+
+    <!-- UI Slider -->
+    <div id="slider">
+      <input type="range" min="0" max="2024" value="2024" step="1" class="slider" />
+    </div>
+  </div>
+  <!-- END TEMPORAL SLIDER -->
+
   <!-- leaflet js -->
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
   <!-- d3js -->
@@ -374,10 +393,6 @@
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 20
-    }).addTo(map);
-    // Add a scale bar
-    L.control.scale({
-      position: 'bottomright'
     }).addTo(map);
     // Add a sidebar to the map
     const sidebar = L.control.sidebar("sidebar").addTo(map);
@@ -439,9 +454,6 @@
     // Define an empty array to store the years
     const years = [];
 
-    // Define the value in the slider
-    let currentYear = $('.slider').val();
-
     // Load the data asynchronously
     d3.queue()
       // Load the data/martyrs.csv data
@@ -493,9 +505,12 @@
         onEachFeature: function(feature, layer) {
           // Push the name of the martyr to the names array
           names.push(feature.properties.name);
-          // Define the minimum and maximum years
-          const minYear = parseInt(feature.properties.death_min);
-          const maxYear = parseInt(feature.properties.death_max);
+
+          // Define minYear of death
+          let year = parseInt(feature.properties.death_min);
+          // Push the minimum death year to the years array
+          years.push(year);
+
           // Add a tooltip to each marker to display the translators' names
           layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' AD<br>' + feature.properties.language + '</h6>');
           // On mouseover, change the marker color
@@ -520,8 +535,12 @@
               shadowSize: [41, 41]
             }));
           });
+          // Define the value in the slider
+          let currentYear = $('.slider').val();
           // Add layers to the selectedMartyrs layer
-          selectedMartyrs.addLayer(layer);
+          if (year <= currentYear) {
+            selectedMartyrs.addLayer(layer);
+          }
         }
       });
       // Assign the martyrLayer layer to the global martyrlocLayer variable
@@ -578,8 +597,75 @@
           adjustMapBounds(map, selectedMartyrs, sidebarElement);
         }, 510);
       });
+      // Get the min and max years
+      const minYear = d3.min(years);
+      const maxYear = d3.max(years);
+      // Update the span element
+      document.getElementById('span').textContent = minYear;
+      // Update the slider attributes
+      $('.slider').attr({
+        'min': minYear,
+        'max': maxYear
+      });
+
+      // Redefine currentYear
+      let currentYear = $('.slider').val();
+
+      // Call Slider Functions
+      sequenceUI(martyrLayer);
+      createTemporalLegend(currentYear);
+      //updateMartyrs(martyrLayer, currentYear);
     };
+
     // Define universal functions
+    // Define the sequenceUI function
+    function sequenceUI(martyrLayer) {
+      // Define the slider
+      $('.slider').on('input', function() {
+        // Update the currentYear
+        currentYear = $(this).val();
+        // Create the temporal legend
+        createTemporalLegend(currentYear);
+        // Update the martyrs
+        updateMartyrs(martyrLayer, currentYear);
+      });
+    };    
+    // Define the createTemporalLegend function
+    function createTemporalLegend(currentYear) {
+      const temporalLegend = L.control({
+        position: 'bottomright'
+      });
+
+      temporalLegend.onAdd = function(map) {
+        const div = L.DomUtil.get("temporal-slider-container");
+        L.DomEvent.addListener(div, 'mousedown', function(e) {
+          L.DomEvent.stopPropagation(e);
+        });
+        L.DomEvent.addListener(div, 'touchstart', function(e) {
+          L.DomEvent.stopPropagation(e);
+        });
+        return div;
+      }
+
+      $('#temporal span').html("Year: " + currentYear);
+
+      temporalLegend.addTo(map);
+      
+    };
+    // Define the updateMartyrs function
+    function updateMartyrs(martyrLayer, currentYear) {
+      // Clear the selectedMartyrs layer
+      selectedMartyrs.clearLayers();
+      // Loop through each layer in the martyrLayer layer
+      martyrLayer.eachLayer(function(layer) {
+        // Define the year of death
+        let year = parseInt(layer.feature.properties.death_min);
+        // Add layers to the selectedMartyrs layer
+        if (year <= currentYear) {
+          selectedMartyrs.addLayer(layer);
+        }
+      });
+    };
     // Define the handleZoomOutClick() function
     function handleZoomOutClick() {
       // Perform the zoom-out operation using fitBounds()
@@ -623,6 +709,7 @@
       };
 
     };
+    
   </script>
 </body>
 
