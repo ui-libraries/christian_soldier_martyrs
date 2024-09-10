@@ -389,11 +389,15 @@
       }
     });
     // add a basemap
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    const awmc = L.tileLayer('https://cawm.lib.uiowa.edu/tiles/{z}/{x}/{y}.png', {
+      maxZoom: 11
+    }).addTo(map);
+    // define a modern basemap
+    const modern = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 20
-    }).addTo(map);
+    })
     // Add a sidebar to the map
     const sidebar = L.control.sidebar("sidebar").addTo(map);
     sidebar.open("home");
@@ -458,10 +462,23 @@
     d3.queue()
       // Load the data/martyrs.csv data
       .defer(d3.csv, 'data/martyrs.csv')
+      .defer(d3.json, 'data/roads.json')
       // Call the drawMap function when the data is loaded
       .await(drawMap);
     // Function to draw the map
-    function drawMap(err, csv) {
+    function drawMap(err, csv, roads) {
+      // Define a geojson object to hold the roads data
+      const roadsLayer = L.geoJson(roads, {
+        style: function(feature) {
+          return {
+            // give the roads a dark red-orange color
+            color: '#8B0000',
+            // make semi-transparent lines
+            opacity: 0.25,
+            weight: 1
+          };
+        }
+      }).addTo(map);
       // Define an empty geojson object to hold processed csv data
       const geojson = {
         type: 'FeatureCollection',
@@ -607,6 +624,17 @@
         'min': minYear,
         'max': maxYear
       });
+
+      // Create a layer control and add the roads as an overlay
+      const baseMaps = {
+        "Ancient World Map": awmc,
+        "Modern World Map": modern
+      };
+      const overlayMaps = {
+        "Roads": roadsLayer
+      };
+      // Add the layer control
+      L.control.layers(baseMaps, overlayMaps).addTo(map);
 
       // Redefine currentYear
       let currentYear = $('.slider').val();
