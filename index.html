@@ -569,7 +569,7 @@
               // Push the minimum death year to the years array
               years.push(year);
               // Add a tooltip to each marker to display the translators' names
-              layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' AD<br>' + feature.properties.language + '</h6>');
+              layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' CE<br>' + feature.properties.language + '</h6>');
               // On mouseover, change the marker color
               layer.on('mouseover', function (e) {
                 // Change the marker color
@@ -651,7 +651,7 @@
                 // Open the sidebar
                 sidebar.open('home');
                 // Set the sidebar content
-                info.innerHTML = '<h3>' + layer.feature.properties.name + '</h3><br><h7><b>Location:</b> ' + layer.feature.properties.location + '</h7><br><b><h7>Martyred:</b> ' + layer.feature.properties.death_min + ' - ' + layer.feature.properties.death_max + ' AD</h7>';
+                info.innerHTML = '<h3>' + layer.feature.properties.name + '</h3><br><h7><b>Martyr Location:</b> ' + layer.feature.properties.location + '</h7><br><b><h7>Martyred:</b> ' + layer.feature.properties.death_min + ' - ' + layer.feature.properties.death_max + ' CE</h7>';
               }
             });
             // Call the adjustMapBounds function
