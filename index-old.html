@@ -409,7 +409,7 @@
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 20
-    });
+    })
     // Add a sidebar to the map
     const sidebar = L.control.sidebar("sidebar").addTo(map);
     sidebar.open("home");
@@ -454,20 +454,34 @@
       // When exiting fullscreen, move the sidebar back to its original position
       document.body.appendChild(sidebarElement);
     });
+    // Define an empty array to hold the chapter content
+    let chapterContent = [];
+    // Define an empty array to hold the martyr names
+    let names = [];
+    // Declare a global variable to hold the martyr locations layer
+    let martyrlocLayer;
+    // Define an empty layer to hold the selected martyrs
+    let selectedMartyrs = L.featureGroup().addTo(map);
+    // define sidebar info
+    const info = document.getElementById('content-info');
+    // Define the name dropdown menu
+    const nameSelect = document.getElementById('name-select');
+
+    // Define an empty array to store the years
+    const years = [];
 
     // Define the Google Sheet URL
     const gsheet = 'https://docs.google.com/spreadsheets/d/17D3v-4T7VpP1xEJqsHxzVuQVMDuz83iB0pYMxVXo4n4/export?format=csv&id=17D3v-4T7VpP1xEJqsHxzVuQVMDuz83iB0pYMxVXo4n4&gid=0';
 
     // Load the data asynchronously
     d3.queue()
-      // Load the data
+      // Load the data/martyrs.csv data
+      .defer(d3.csv, 'data/martyrs.csv')
       .defer(d3.json, 'data/roads.json')
       // Call the drawMap function when the data is loaded
       .await(drawMap);
-
     // Function to draw the map
-    function drawMap(err, roads) {
-
+    function drawMap(err, csv, roads) {
       // Define a geojson object to hold the roads data
       const roadsLayer = L.geoJson(roads, {
         style: function (feature) {
@@ -481,34 +495,17 @@
         }
       }).addTo(map);
 
+      // Define an empty geojson object for martyrdom
+      const martyrdom = {
+        type: 'FeatureCollection',
+        features: []
+      };
+
       // Parse the google sheet data
       Papa.parse(gsheet, {
         download: true,
         header: true,
-
         complete: function (results) {
-
-          // Define an empty array to hold the chapter content
-          let chapterContent = [];
-          // Define an empty array to hold the martyr names
-          let names = [];
-          // Declare a global variable to hold the martyr locations layer
-          let martyrlocLayer;
-          // Define an empty layer to hold the selected martyrs
-          let selectedMartyrs = L.featureGroup().addTo(map);
-          // define sidebar info
-          const info = document.getElementById('content-info');
-          // Define the name dropdown menu
-          const nameSelect = document.getElementById('name-select');
-          // Define an empty array to store the years
-          const years = [];
-
-          // Define an empty geojson object for martyrdom
-          const martyrdom = {
-            type: 'FeatureCollection',
-            features: []
-          };
-
           // Define data
           let data = results.data;
           // Loop through each row in the data
@@ -533,8 +530,8 @@
               properties: {
                 name: row['Name'],
                 location: row['Place of Martyrdom'] + ', ' + row['Region of Martyrdom'],
-                death_max: row['Death Not After'],
-                death_min: row['Death Not Before'],
+                death_max: row['Death_Not_After'],
+                death_min: row['Death_Not_Before'],
                 gender: row['Gender'],
                 language: row['Language']
               },
@@ -545,8 +542,7 @@
             };
             // Add the feature to the geojson object
             martyrdom.features.push(martyrFeature);
-          };
-
+          }
           // Define a leaflet layer for the geojson data
           const martyrLayer = L.geoJson(martyrdom, {
             pointToLayer: function (feature, latlng) {
@@ -605,7 +601,6 @@
           martyrlocLayer = martyrLayer;
           // Fit the map to the martyrlocLayer layer bounds
           map.fitBounds(martyrlocLayer.getBounds());
-
           // Define the zoomOutButton
           const zoomOutButton = document.getElementById('zoomOutButton');
           // Add a click event listener to the zoomOutButton
@@ -613,7 +608,6 @@
             // Perform the zoom-out operation using fitBounds()
             map.fitBounds(martyrlocLayer.getBounds());
           });
-
           // Define the resetButton
           const resetButton = document.getElementById('resetButton');
           // Add a click event listener to the resetButton
@@ -621,7 +615,6 @@
             // Refresh the page
             location.reload();
           });
-
           // Reorder the names array alphabetically
           names.sort();
           // Add the names array to the dropdown menu
@@ -635,7 +628,6 @@
             // Append the option to the nameSelect dropdown menu
             nameSelect.appendChild(option);
           });
-
           // Listen for a change event on the nameSelect dropdown menu
           nameSelect.addEventListener('change', function () {
             // Get the selected name
@@ -657,143 +649,154 @@
             // Call the adjustMapBounds function
             adjustMapBounds(map, selectedMartyrs, sidebarElement);
           });
-
-          // Listen for a window resize event
-          window.addEventListener('resize', function () {
-            adjustMapBounds(map, selectedMartyrs, sidebarElement);
-          });
-          // Listen for a sidebar opening event
-          sidebar.on('opening', function (e) {
-            setTimeout(function () {
+            // Listen for a window resize event
+            window.addEventListener('resize', function () {
               adjustMapBounds(map, selectedMartyrs, sidebarElement);
-            }, 510);
-          });
-          // Listen for a sidebar closing event
-          sidebar.on('closing', function (e) {
-            setTimeout(function () {
-              adjustMapBounds(map, selectedMartyrs, sidebarElement);
-            }, 510);
-          });
+            });
+            // Listen for a sidebar opening event
+            sidebar.on('opening', function (e) {
+              setTimeout(function () {
+                adjustMapBounds(map, selectedMartyrs, sidebarElement);
+              }, 510);
+            });
+            // Listen for a sidebar closing event
+            sidebar.on('closing', function (e) {
+              setTimeout(function () {
+                adjustMapBounds(map, selectedMartyrs, sidebarElement);
+              }, 510);
+            });
+            // Get the min and max years
+            const minYear = d3.min(years);
+            const maxYear = d3.max(years);
+            // Update the span element
+            document.getElementById('span').textContent = minYear;
+            // Update the slider attributes
+            $('.slider').attr({
+              'min': minYear,
+              'max': maxYear
+            });
+            // Create a layer control and add the roads as an overlay
+            const baseMaps = {
+              "Ancient World Map": awmc,
+              "Modern World Map": modern
+            };
+            const overlayMaps = {
+              "Roads": roadsLayer
+            };
+            // Add the layer control
+            L.control.layers(baseMaps, overlayMaps).addTo(map);
+            // Redefine currentYear
+            let currentYear = $('.slider').val();
 
-          // Get the min and max years
-          const minYear = d3.min(years);
-          const maxYear = d3.max(years);
-          // Update the span element
-          document.getElementById('span').textContent = minYear;
-          // Update the slider attributes
-          $('.slider').attr({
-            'min': minYear,
-            'max': maxYear
-          });
+            console.log(martyrlocLayer);
 
-          // Create a layer control and add the roads as an overlay
-          const baseMaps = {
-            "Ancient World Map": awmc,
-            "Modern World Map": modern
-          };
-          const overlayMaps = {
-            "Roads": roadsLayer
-          };
-          // Add the layer control
-          L.control.layers(baseMaps, overlayMaps).addTo(map);
+            // Call Slider Functions
+            sequenceUI(martyrLayer);
+            createTemporalLegend(currentYear);
+            //updateMartyrs(martyrLayer, currentYear);
 
-          // Redefine currentYear
-          let currentYear = $('.slider').val();
-          
-          // Call Slider Functions
+          console.log(martyrLayer);
+
           sequenceUI(martyrLayer);
           createTemporalLegend(currentYear);
-          //updateMartyrs(martyrLayer, currentYear);
+        }
+    });
 
-/* UNIVERSAL FUNCTIONS */          
-          
-          // Define the sequenceUI function
-          function sequenceUI(martyrLayer) {
-            // Define the slider
-            $('.slider').on('input', function () {
-              // Update the currentYear
-              currentYear = $(this).val();
-              // Create the temporal legend
-              createTemporalLegend(currentYear);
-              // Update the martyrs
-              updateMartyrs(martyrLayer, currentYear);
-            });
-          };
-          
-          // Define the createTemporalLegend function
-          function createTemporalLegend(currentYear) {
-            const temporalLegend = L.control({
-              position: 'bottomright'
-            });
 
-            temporalLegend.onAdd = function (map) {
-              const div = L.DomUtil.get("temporal-slider-container");
-              L.DomEvent.addListener(div, 'mousedown', function (e) {
-                L.DomEvent.stopPropagation(e);
-              });
-              L.DomEvent.addListener(div, 'touchstart', function (e) {
-                L.DomEvent.stopPropagation(e);
-              });
-              return div;
-            }
 
-            $('#temporal span').html("Year: " + currentYear);
+      // Define universal functions
+      // Define the sequenceUI function
+      function sequenceUI(martyrLayer) {
+        // Define the slider
+        $('.slider').on('input', function () {
+          // Update the currentYear
+          currentYear = $(this).val();
+          // Create the temporal legend
+          createTemporalLegend(currentYear);
+          // Update the martyrs
+          updateMartyrs(martyrLayer, currentYear);
+        });
+      };
+      // Define the createTemporalLegend function
+      function createTemporalLegend(currentYear) {
+        const temporalLegend = L.control({
+          position: 'bottomright'
+        });
 
-            temporalLegend.addTo(map);
-
-          }; 
-          
-          // Define the updateMartyrs function
-          function updateMartyrs(martyrLayer, currentYear) {
-            // Clear the selectedMartyrs layer
-            selectedMartyrs.clearLayers();
-            // Loop through each layer in the martyrLayer layer
-            martyrLayer.eachLayer(function(layer) {
-              // Define the year of death
-              let year = parseInt(layer.feature.properties.death_min);
-              // Add layers to the selectedMartyrs layer
-              if (year <= currentYear) {
-                selectedMartyrs.addLayer(layer);
-              }
-            });
-          };          
-
-          // Define a function to fit markers within the visible window
-          function adjustMapBounds(map, selectedMartyrs, sidebarElement) {
-
-            // Get the right side of the sidebar
-            let sidebarRight = sidebarElement.getBoundingClientRect().right;
-
-            // Reset the map's active area with the new left-hand side
-            map.setActiveArea({
-              position: 'absolute',
-              top: '0px',
-              left: sidebarRight + 'px',
-              right: '0px',
-              height: '100%'
-            });
-
-            // Using this new left-hand side, fit the map to the markers
-            if (selectedMartyrs.getLayers().length > 0) {
-              // Initialize an empty LatLngBounds object
-              let bounds = L.latLngBounds();
-              // Loop through the selectedMartyrs layer to get the bounds
-              selectedMartyrs.eachLayer(function (layer) {
-                bounds.extend(layer.getLatLng());
-              });
-              // Fit the map to the bounds
-              map.fitBounds(bounds);
-            };
-
-            // Set the maximum zoom level to 10 if the current zoom level is greater than 10
-            if (map.getZoom() > 8) {
-              map.setZoom(8);
-            };
-          };
-
+        temporalLegend.onAdd = function (map) {
+          const div = L.DomUtil.get("temporal-slider-container");
+          L.DomEvent.addListener(div, 'mousedown', function (e) {
+            L.DomEvent.stopPropagation(e);
+          });
+          L.DomEvent.addListener(div, 'touchstart', function (e) {
+            L.DomEvent.stopPropagation(e);
+          });
+          return div;
         }
 
-      });
+        $('#temporal span').html("Year: " + currentYear);
+
+        temporalLegend.addTo(map);
+
+      };
+      // Define the updateMartyrs function
+      function updateMartyrs(martyrLayer, currentYear) {
+        // Clear the selectedMartyrs layer
+        selectedMartyrs.clearLayers();
+        // Loop through each layer in the martyrLayer layer
+        martyrLayer.eachLayer(function (layer) {
+          // Define the year of death
+          let year = parseInt(layer.feature.properties.death_min);
+          // Add layers to the selectedMartyrs layer
+          if (year <= currentYear) {
+            selectedMartyrs.addLayer(layer);
+          }
+        });
+      };
+/*      
+      // Define the handleZoomOutClick() function
+      function handleZoomOutClick() {
+        // Perform the zoom-out operation using fitBounds()
+        map.fitBounds(martyrlocLayer.getBounds());
+      };
+      // Define the handleButtonClick() function
+      function handleButtonClick() {
+        // Refresh the page
+        location.reload();
+      };
+*/
+      // Define a function to fit markers within the visible window
+      function adjustMapBounds(map, selectedMartyrs, sidebarElement) {
+
+        // Get the right side of the sidebar
+        let sidebarRight = sidebarElement.getBoundingClientRect().right;
+
+        // Reset the map's active area with the new left-hand side
+        map.setActiveArea({
+          position: 'absolute',
+          top: '0px',
+          left: sidebarRight + 'px',
+          right: '0px',
+          height: '100%'
+        });
+
+        // Using this new left-hand side, fit the map to the markers
+        if (selectedMartyrs.getLayers().length > 0) {
+          // Initialize an empty LatLngBounds object
+          let bounds = L.latLngBounds();
+          // Loop through the selectedMartyrs layer to get the bounds
+          selectedMartyrs.eachLayer(function (layer) {
+            bounds.extend(layer.getLatLng());
+          });
+          // Fit the map to the bounds
+          map.fitBounds(bounds);
+        };
+
+        // Set the maximum zoom level to 10 if the current zoom level is greater than 10
+        if (map.getZoom() > 8) {
+          map.setZoom(8);
+        };
+      };
 
     };
 
