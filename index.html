@@ -109,7 +109,7 @@
       font-weight: 400;
       font-size: 18px;
       /*text-transform: uppercase;*/
-      margin-left: 20px;
+      margin-left: 1.1em;
       margin-top: 0px;
       margin-bottom: 0px;
       margin-right: 0px;
@@ -139,7 +139,7 @@
     h7 {
       font-family: "Albert Sans", sans-serif;
       font-size: 14px;
-      margin-left: 20px;
+      margin-left: 1.4em;
       margin-top: 0px;
       margin-bottom: 0px;
       margin-right: 0px;
@@ -184,6 +184,18 @@
       margin-left: 0px;
     }
 
+    /* sources header */
+    .sources {
+      color: rgb(0, 0, 0);
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 400;
+      font-style: normal;
+      font-size: 18px;
+      margin-bottom: 0px;
+      margin-top: 10px;
+      margin-left: 1.1em;
+    }
+
     /* map info */
     .details {
       font-family: "Albert Sans", sans-serif;
@@ -199,6 +211,16 @@
       font-weight: 300;
       margin-bottom: 0px;
       margin-top: 0px;
+    }
+
+    /* source list */
+    .sourceList {
+      font-family: "Albert Sans", sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      margin-bottom: 0px;
+      margin-top: 0px;
+      margin-left: 1.4em;
     }
 
     .content {
@@ -348,6 +370,12 @@
       <br>
       <div id="sidebar-info" class="my-info-1">
         <div id="content-info" class="contentinfo hide"></div>
+      </div>
+      <div id="sources">
+        <h2 class="sources">Sources</h2>
+        <h4 class="sourceList">Åhlfeldt, Johan. Digital Atlas of the Roman Empire, 2020. https://imperium.ahlfeldt.se.
+          <br>Bryan, Ward-Perkins. “The Cult of Saints in Late Antiquity.” The Cult of Saints, 2021. http://csla.history.ox.ac.uk.
+        </h4>
       </div>
     </div>
   </div>
@@ -651,7 +679,7 @@
                 // Open the sidebar
                 sidebar.open('home');
                 // Set the sidebar content
-                info.innerHTML = '<h3>' + layer.feature.properties.name + '</h3><br><h7><b>Martyr Location:</b> ' + layer.feature.properties.location + '</h7><br><b><h7>Martyred:</b> ' + layer.feature.properties.death_min + ' - ' + layer.feature.properties.death_max + ' CE</h7>';
+                info.innerHTML = '<h3>' + layer.feature.properties.name + '</h3><h7><b>Martyr Location:</b> ' + layer.feature.properties.location + '</h7><br><b><h7>Martyred:</b> ' + layer.feature.properties.death_min + ' - ' + layer.feature.properties.death_max + ' CE</h7>';
               }
             });
             // Call the adjustMapBounds function
