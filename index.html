@@ -538,8 +538,15 @@
             features: []
           };
 
+          // Define an empty geojson object for cult 
+          const cult = {
+            type: 'FeatureCollection',
+            features: []
+          };
+
           // Define data
           let data = results.data;
+
           // Loop through each row in the data
           for (let i = 0; i < data.length; i++) {
             // Define variables
@@ -576,6 +583,41 @@
             martyrdom.features.push(martyrFeature);
           };
 
+          for (let i = 0; i < data.length; i++) {
+            // Define variables
+            let row = data[i];
+            // Define the cult coordinates
+            let cultCoords = row['Coordinate of the Cult 1'];
+            // Skip the row if the cultCoords is empty
+            if (cultCoords === '') {
+              continue;
+            }
+            // Split the cultCoords into an array
+            let cultCoordsSplit = cultCoords.split(',');
+            // Define the cultLat
+            let cultLat = parseFloat(cultCoordsSplit[0]).toString();
+            // Define the cultLng
+            let cultLng = parseFloat(cultCoordsSplit[1]).toString();
+            // Define a new geojson feature object
+            const cultFeature = {
+              type: 'Feature',
+              properties: {
+                name: row['Name'],
+                location: row['Place of Cult 1'],
+                death_max: row['Death Not After'],
+                death_min: row['Death Not Before'],
+                gender: row['Gender'],
+                language: row['Language']
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [cultLng, cultLat]
+              }
+            };
+            // Add the feature to the geojson object
+            cult.features.push(cultFeature);
+          };
+
           // Define a leaflet layer for the geojson data
           const martyrLayer = L.geoJson(martyrdom, {
             pointToLayer: function (feature, latlng) {
@@ -597,7 +639,7 @@
               let year = parseInt(feature.properties.death_min);
               // Push the minimum death year to the years array
               years.push(year);
-              // Add a tooltip to each marker to display the translators' names
+              // Add a tooltip to each marker to display the martyrs' names
               layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' CE<br>' + feature.properties.language + '</h6>');
               // On mouseover, change the marker color
               layer.on('mouseover', function (e) {
@@ -630,10 +672,61 @@
             }
           });
 
-          // Assign the martyrLayer layer to the global martyrlocLayer variable
-          martyrlocLayer = martyrLayer;
+          // Define a leaflet layer for the geojson data
+          const cultLayer = L.geoJson(cult, {
+            pointToLayer: function (feature, latlng) {
+              // Create a red marker
+              return L.marker(latlng, {
+                icon: L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                })
+              });
+            },
+            onEachFeature: function (feature, layer) {
+              // Define minYear of death
+              let year = parseInt(feature.properties.death_min);
+              // Add a tooltip to each marker to display the martyrs' names
+              layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' CE<br>' + feature.properties.language + '</h6>');
+              // On mouseover, change the marker color
+              layer.on('mouseover', function (e) {
+                // Change the marker color
+                this.setIcon(L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                }));
+              });
+              // On mouseout, change the marker color back
+              layer.on('mouseout', function (e) {
+                // Change the marker color
+                this.setIcon(L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                }));
+              });
+              // Define the value in the slider
+              let currentYear = $('.slider').val();
+              // Add layers to the selectedMartyrs layer
+              if (year <= currentYear) {
+                selectedMartyrs.addLayer(layer);
+              }              
+            }
+          });          
+
+/* NEED TO MAKE A COMBINED LAYER FOR MARTYRDOM AND CULT */
+          // Define a combined layer for martyrdom and cult using L.featureGroup
+          martyrlocLayer = L.featureGroup([martyrLayer, cultLayer]);
           // Fit the map to the martyrlocLayer layer bounds
-          map.fitBounds(martyrlocLayer.getBounds());
+          map.fitBounds(martyrlocLayer.getBounds());     
 
           // Define the zoomOutButton
           const zoomOutButton = document.getElementById('zoomOutButton');
