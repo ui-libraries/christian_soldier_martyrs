@@ -550,6 +550,12 @@
             features: []
           };
 
+          // Define an empty geojson object for shrine
+          const shrine = {
+            type: 'FeatureCollection',
+            features: []
+          };
+
           // Define data
           let data = results.data;
 
@@ -628,6 +634,127 @@
             cult.features.push(cultFeature);
           };
 
+ // Helper function to create a GeoJSON feature
+function createShrineFeature(row, coords, locationKey, pleiadesKey) {
+    if (!coords) return null;
+    
+    const [lat, lng] = coords.split(',').map(Number);
+    return {
+        type: 'Feature',
+        properties: {
+            name: row['Name'],
+            location: row[locationKey],
+            death_max: row['Death Not After'],
+            death_min: row['Death Not Before'],
+            gender: row['Gender'],
+            language: row['Language'],
+            pleiades: row[pleiadesKey],
+            kind: 'shrine'
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [lng, lat]
+        }
+    };
+};
+
+// Process each row and add features to the GeoJSON object
+data.forEach(row => {
+    const shrineCoords1 = row['Shrine 1 Coordinate'];
+    const shrineCoords2 = row['Shrine 2 Coordinate'];
+    const shrineCoords3 = row['Shrine 3 Coordinate'];
+    const shrineCoords4 = row['Shrine 4 Coordinate'];
+    const shrineCoords5 = row['Shrine 5 Coordinate'];
+    const shrineCoords6 = row['Shrine 6 Coordinate'];
+    
+    const shrineFeature1 = createShrineFeature(row, shrineCoords1, 'Shrine 1 Location', 'Shrine 1 Pleiades');
+    const shrineFeature2 = createShrineFeature(row, shrineCoords2, 'Shrine 2 Location', 'Shrine 2 Pleiades');
+    const shrineFeature3 = createShrineFeature(row, shrineCoords3, 'Shrine 3 Location', 'Shrine 3 Pleiades');
+    const shrineFeature4 = createShrineFeature(row, shrineCoords4, 'Shrine 4 Location', 'Shrine 4 Pleiades');
+    const shrineFeature5 = createShrineFeature(row, shrineCoords5, 'Shrine 5 Location', 'Shrine 5 Pleiades');
+    const shrineFeature6 = createShrineFeature(row, shrineCoords6, 'Shrine 6 Location', 'Shrine 6 Pleiades');
+
+    if (shrineFeature1) shrine.features.push(shrineFeature1);
+    if (shrineFeature2) shrine.features.push(shrineFeature2);
+    if (shrineFeature3) shrine.features.push(shrineFeature3);
+    if (shrineFeature4) shrine.features.push(shrineFeature4);
+    if (shrineFeature5) shrine.features.push(shrineFeature5);
+    if (shrineFeature6) shrine.features.push(shrineFeature6);
+});
+
+console.log(shrine);
+         
+/*
+          for (let i = 0; i < data.length; i++) {
+            // Define variables
+            let row = data[i];
+            // Define the first shrine coordinates
+            let shrineCoords1 = row['Shrine 1 Coordinate'];
+            // Skip the row if the shrineCoords1 is empty
+            if (shrineCoords1 === '') {
+              continue;
+            };
+            // Split the shrineCoords1 into an array
+            let shrineCoordsSplit1 = shrineCoords1.split(',');
+            // Define the shrineLat1
+            let shrineLat1 = parseFloat(shrineCoordsSplit1[0]).toString();
+            // Define the shrineLng1
+            let shrineLng1 = parseFloat(shrineCoordsSplit1[1]).toString();
+            // Define a new geojson feature object
+            const shrineFeature1 = {
+              type: 'Feature',
+              properties: {
+                name: row['Name'],
+                location: row['Shrine 1 Location'],
+                death_max: row['Death Not After'],
+                death_min: row['Death Not Before'],
+                gender: row['Gender'],
+                language: row['Language'],
+                pleiades: row['Shrine 1 Pleiades'],
+                kind: 'shrine'
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [shrineLng1, shrineLat1]
+              }
+            };
+            // Add the feature to the geojson object
+            shrine.features.push(shrineFeature1);
+            // Define the second shrine coordinates
+            let shrineCoords2 = row['Shrine 2 Coordinate'];
+            // Skip the row if the shrineCoords2 is empty
+            if (shrineCoords2 === '') {
+              continue;
+            };
+            // Split the shrineCoords2 into an array
+            let shrineCoordsSplit2 = shrineCoords2.split(',');
+            // Define the shrineLat2
+            let shrineLat2 = parseFloat(shrineCoordsSplit2[0]).toString();
+            // Define the shrineLng2
+            let shrineLng2 = parseFloat(shrineCoordsSplit2[1]).toString();
+            // Define a new geojson feature object
+            const shrineFeature2 = {
+              type: 'Feature',
+              properties: {
+                name: row['Name'],
+                location: row['Shrine 2 Location'],
+                death_max: row['Death Not After'],
+                death_min: row['Death Not Before'],
+                gender: row['Gender'],
+                language: row['Language'],
+                pleiades: row['Shrine 2 Pleiades'],
+                kind: 'shrine'
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [shrineLng2, shrineLat2]
+              }
+            };
+            // Add the feature to the geojson object
+            shrine.features.push(shrineFeature2);
+          };
+*/
+
           // Define a leaflet layer for the geojson data
           const martyrLayer = L.geoJson(martyrdom, {
             pointToLayer: function (feature, latlng) {
@@ -675,7 +802,7 @@
               });
               // Define the value in the slider
               let currentYear = $('.slider').val();
-              // Add layers to the selectedMartyrs layer
+              // Add layers to the groupedMartyrs layer
               if (year <= currentYear) {
                 groupedMartyrs.addLayer(layer);
                 selectedMartyrs.addLayer(layer);
@@ -726,17 +853,68 @@
               });
               // Define the value in the slider
               let currentYear = $('.slider').val();
-              // Add layers to the selectedMartyrs layer
+              // Add layers to the groupedMartyrs layer
               if (year <= currentYear) {
                 groupedMartyrs.addLayer(layer);
                 selectedCults.addLayer(layer);
               }              
             }          
-          });          
+          }); 
+          
+// Define a leaflet layer for the geojson data
+const shrineLayer = L.geoJson(shrine, {
+  pointToLayer: function (feature, latlng) {
+    // Create a green marker
+    return L.marker(latlng, {
+      icon: L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        shadowSize: [41, 41]
+      })
+    });
+  },
+  onEachFeature: function (feature, layer) {
+    // Define minYear of death
+    let year = parseInt(feature.properties.death_min);
+    // Add a tooltip to each marker to display the martyrs' names
+    layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' CE<br>' + feature.properties.language + '</h6>');
+    // On mouseover, change the marker color
+    layer.on('mouseover', function (e) {
+      // Change the marker color
+      this.setIcon(L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        shadowSize: [41, 41]
+      }));
+    });
+    // On mouseout, change the marker color back
+    layer.on('mouseout', function (e) {
+      // Change the marker color
+      this.setIcon(L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        shadowSize: [41, 41]
+      }));
+    });
+    // Define the value in the slider
+    let currentYear = $('.slider').val();
+    // Add layers to the groupedMartyrs layer
+    if (year <= currentYear) {
+      groupedMartyrs.addLayer(layer);
+      selectedShrines.addLayer(layer);
+    }
+  }
+});          
 
 /* NEED TO MAKE A COMBINED LAYER FOR MARTYRDOM AND CULT */
           // Define a combined layer for martyrdom and cult using L.featureGroup
-          martyrlocLayer = L.featureGroup([martyrLayer, cultLayer]);
+          martyrlocLayer = L.featureGroup([martyrLayer, cultLayer, shrineLayer]);
           // Fit the map to the martyrlocLayer layer bounds
           map.fitBounds(martyrlocLayer.getBounds());     
 
@@ -781,6 +959,8 @@
             selectedMartyrs.clearLayers();
             // Clear the selectedCults layer
             selectedCults.clearLayers();
+            // Clear the selectedShrines layer
+            selectedShrines.clearLayers();
             // Loop through each layer in the martyrlocLayer layer
             martyrlocLayer.eachLayer(function (layer) {
               // Iterate through each feature in the layer
@@ -803,8 +983,12 @@
                     // Add the layer to the selectedCults layer
                     selectedCults.addLayer(featureLayer);
                   };
+                  // If the feature is a shrine
+                  if (featureLayer.feature.properties.kind === 'shrine') {
+                    // Add the layer to the selectedShrines layer
+                    selectedShrines.addLayer(featureLayer);
+                  };
                 };
-
               });
             });
             // Call the adjustMapBounds function
@@ -847,7 +1031,8 @@
           const overlayMaps = {
             "Roads": roadsLayer,
             "Site of Martyrdom": selectedMartyrs,
-            "Site of Cult": selectedCults 
+            "Site of Cult": selectedCults,
+            "Site of Shrine": selectedShrines
           };
           // Add the layer control
           L.control.layers(baseMaps, overlayMaps).addTo(map);      
@@ -856,14 +1041,14 @@
           let currentYear = $('.slider').val();
           
           // Call Slider Functions
-          sequenceUI(martyrLayer, cultLayer, selectedCults);
+          sequenceUI(martyrLayer, cultLayer, shrineLayer);
           createTemporalLegend(currentYear);
           //updateMartyrs(martyrLayer, currentYear);
 
 /* UNIVERSAL FUNCTIONS */          
           
           // Define the sequenceUI function
-          function sequenceUI(martyrLayer, cultLayer) {
+          function sequenceUI(martyrLayer, cultLayer, shrineLayer) {
             // Define the slider
             $('.slider').on('input', function () {
               // Update the currentYear
@@ -871,7 +1056,7 @@
               // Create the temporal legend
               createTemporalLegend(currentYear);
               // Update the martyrs
-              updateMartyrs(martyrLayer, cultLayer, currentYear)
+              updateMartyrs(martyrLayer, cultLayer, shrineLayer, currentYear)
             });
           };
           
@@ -899,11 +1084,13 @@
           }; 
           
           // Define the updateMartyrs function
-          function updateMartyrs(martyrLayer, cultLayer, currentYear) {
+          function updateMartyrs(martyrLayer, cultLayer, shrineLayer, currentYear) {
             // Clear the selectedMartyrs layer
             selectedMartyrs.clearLayers();
             // Clear the selectedCults layer
             selectedCults.clearLayers();
+            // Clear the selectedShrines layer
+            selectedShrines.clearLayers();
             // Loop through each layer in the martyrLayer layer
             martyrLayer.eachLayer(function(layer) {
               // Define the year of death
@@ -920,6 +1107,15 @@
               // Add layers to the selectedCults layer
               if (year <= currentYear) {
                 selectedCults.addLayer(layer);
+              }
+            });
+            // Loop through each layer in the shrineLayer layer
+            shrineLayer.eachLayer(function(layer) {
+              // Define the year of death
+              let year = parseInt(layer.feature.properties.death_min);
+              // Add layers to the selectedShrines layer
+              if (year <= currentYear) {
+                selectedShrines.addLayer(layer);
               }
             });
           };          
@@ -965,7 +1161,7 @@
 
             // If the feature is a martyr
             if (featureLayer.feature.properties.kind === 'martyr') {
-                newContent += '<h3>' + featureLayer.feature.properties.name + '</h3>' +
+                newContent += '<h3>' + featureLayer.feature.properties.name + '</h3><br>' +
                               '<h7><b>Martyred:</b> ' + featureLayer.feature.properties.death_min + ' - ' + featureLayer.feature.properties.death_max + ' CE</h7>' +
                               '<br><h7><b>Martyr Location:</b> ' + featureLayer.feature.properties.location + '</h7>' +
                               '<br><h7><b>Pleiades URL:</b> <a href="https://pleiades.stoa.org/places/' + featureLayer.feature.properties.pleiades + '" target="_blank">' + featureLayer.feature.properties.pleiades + '</a></h7>';
@@ -973,7 +1169,13 @@
 
             // If the feature is a cult
             if (featureLayer.feature.properties.kind === 'cult') {
-                newContent += '<br><h7><b>Cult Location:</b> ' + featureLayer.feature.properties.location + '</h7>' + 
+                newContent += '<br><br><h7><b>Cult Location:</b> ' + featureLayer.feature.properties.location + '</h7>' + 
+                              '<br><h7><b>Pleiades URL:</b> <a href="https://pleiades.stoa.org/places/' + featureLayer.feature.properties.pleiades + '" target="_blank">' + featureLayer.feature.properties.pleiades + '</a></h7>';
+            }
+
+            // If the feature is a shrine
+            if (featureLayer.feature.properties.kind === 'shrine') {
+                newContent += '<br><br><h7><b>Shrine Location:</b> ' + featureLayer.feature.properties.location + '</h7>' + 
                               '<br><h7><b>Pleiades URL:</b> <a href="https://pleiades.stoa.org/places/' + featureLayer.feature.properties.pleiades + '" target="_blank">' + featureLayer.feature.properties.pleiades + '</a></h7>';
             }
 
