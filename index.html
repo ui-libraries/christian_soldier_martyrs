@@ -265,7 +265,7 @@
       /* Increase this value as needed */
       height: 40px;
       /* Adjust height if necessary */
-      padding: 10px;
+      padding: 5px;
     }
 
     /* Set temporal legend styles */
@@ -1108,7 +1108,29 @@
                       coordinates: [lng, lat]
                   }
               };
-          };          
+          };
+          
+          // Create a legend for the markers layers
+          const legend = L.control({
+            position: 'bottomright'
+          });
+
+          legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            // Give a semi-transparent background
+            div.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+            // Position the legend 10px from the right
+            div.style.right = '10px';
+            // Give the legend a 5px padding
+            div.style.padding = '5px';
+            div.innerHTML += '<h4 style="margin-top: 0.0em";>Legend</h4>';
+            div.innerHTML += '<i class="fas fa-map-marker-alt" style="color: #4682B4"></i><span> Martyrdom</span><br>';
+            div.innerHTML += '<i class="fas fa-map-marker-alt" style="color: #C41E3A"></i><span> Cult</span><br>';
+            div.innerHTML += '<i class="fas fa-map-marker-alt" style="color: #4CBB17"></i><span> Shrine</span><br>';
+            return div;
+          };
+
+          legend.addTo(map);
 
         }
 
