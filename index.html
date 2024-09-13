@@ -529,6 +529,8 @@
           let selectedMartyrs = L.featureGroup().addTo(map);
           // Define an empty layer to hold the selected cults
           let selectedCults = L.featureGroup().addTo(map);
+          // Define an empty layer to hold the selected shrines
+          let selectedShrines = L.featureGroup().addTo(map);
           // define sidebar info
           const info = document.getElementById('content-info');
           // Define the name dropdown menu
@@ -577,6 +579,7 @@
                 death_min: row['Death Not Before'],
                 gender: row['Gender'],
                 language: row['Language'],
+                pleiades: row['Martyrdom Pleiades Id'],
                 kind: 'martyr'
               },
               geometry: {
@@ -613,6 +616,7 @@
                 death_min: row['Death Not Before'],
                 gender: row['Gender'],
                 language: row['Language'],
+                pleiades: row['Cult Pleiades Id'],
                 kind: 'cult'
               },
               geometry: {
@@ -962,13 +966,15 @@
             // If the feature is a martyr
             if (featureLayer.feature.properties.kind === 'martyr') {
                 newContent += '<h3>' + featureLayer.feature.properties.name + '</h3>' +
-                              '<h7><b>Martyr Location:</b> ' + featureLayer.feature.properties.location + '</h7>' +
-                              '<br><b><h7>Martyred:</b> ' + featureLayer.feature.properties.death_min + ' - ' + featureLayer.feature.properties.death_max + ' CE</h7>';
+                              '<h7><b>Martyred:</b> ' + featureLayer.feature.properties.death_min + ' - ' + featureLayer.feature.properties.death_max + ' CE</h7>' +
+                              '<br><h7><b>Martyr Location:</b> ' + featureLayer.feature.properties.location + '</h7>' +
+                              '<br><h7><b>Pleiades URL:</b> <a href="https://pleiades.stoa.org/places/' + featureLayer.feature.properties.pleiades + '" target="_blank">' + featureLayer.feature.properties.pleiades + '</a></h7>';
             }
 
             // If the feature is a cult
             if (featureLayer.feature.properties.kind === 'cult') {
-                newContent += '<br><h7><b>Cult Location:</b> ' + featureLayer.feature.properties.location + '</h7>';
+                newContent += '<br><h7><b>Cult Location:</b> ' + featureLayer.feature.properties.location + '</h7>' + 
+                              '<br><h7><b>Pleiades URL:</b> <a href="https://pleiades.stoa.org/places/' + featureLayer.feature.properties.pleiades + '" target="_blank">' + featureLayer.feature.properties.pleiades + '</a></h7>';
             }
 
             // Append the new content to the sidebar
