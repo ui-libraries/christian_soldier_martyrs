@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Add a title to the page -->
-  <title>Martyrdom of the Saints</title>
+  <title>Cults of Late Antique Christian Soldier Martyrs</title>
 
   <!-- link to Cormorant Garamond and Albert Sans fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -284,7 +284,11 @@
     #temporal span {
       font-family: 'Montserrat', sans-serif;
       font-size: 13px;
-      margin-left: 10px;
+      /*margin-left: 10px;*/
+      /* vertically center the text */
+      line-height: 25px;
+      /* Add some padding to the left */
+      padding-left: 10px;
     }
 
     /* Set time slider styles */
@@ -312,7 +316,25 @@
 
     /* END TEMPORAL SLIDER CSS */
 
-    /* End custom sidebar css */
+    /* Set up the style for the legend */
+    .info.legend {
+      position: absolute;
+      bottom: 100px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.5);
+      padding: 5px;
+      font-family: Arial, sans-serif;
+    }
+
+    .info.legend h4 {
+      margin-top: 0.0em;
+      margin-bottom: 0.25em;
+      font-size: 18px;
+    }
+
+    .info.legend i {
+      margin-right: 5px;
+    }
   </style>
 </head>
 
@@ -334,12 +356,12 @@
         </div>
         <div id="collapsibleContent">
           </b><br>
-          <h4 class="details">About this project here.</h4>
-          <br>
-          <h4 class="instructions">Instructions for using the map here.</h4>
+          <h4 class="details">This map, based on the earliest Greek, Latin, Coptic, Syriac, Armenian, and Georgian records of Christian Soldier Martyrs, where there cults spread, and the identified shrine sites, spanning from the second to seventh centuries CE.</h4>
+          <!--<br>
+          <h4 class="instructions">Instructions for using the map here.</h4>-->
           <br>
           <h4 class="content">For more information about this project, please contact <a
-              href="hasanhuseyin-degerli@uiowa.edu">Hasan Degerli</a> at the University of Iowa.</h4>
+              href="mailto:hasanhuseyin-degerli@uiowa.edu">Hasan Degerli</a> at the University of Iowa.</h4>
           <br><i>
             <h4 class="details">Principal Investigator: Hasan Degerli, Ph.D. Candidate, Religious Studies, University of
               Iowa</h4>
@@ -381,7 +403,7 @@
       </div>
     </div>
   </div>
-  </div>
+
   <!-- map -->
   <div id="map"></div>
 
@@ -399,6 +421,14 @@
     </div>
   </div>
   <!-- END TEMPORAL SLIDER -->
+
+  <!-- Create the legend container -->
+  <div class="info legend">
+    <h4>Legend</h4>
+    <i class="fas fa-map-marker-alt" style="color: #4682B4"></i><span> Martyrdom</span><br>
+    <i class="fas fa-map-marker-alt" style="color: #C41E3A"></i><span> Cult</span><br>
+    <i class="fas fa-map-marker-alt" style="color: #4CBB17"></i><span> Shrine</span><br>
+  </div>
 
   <!-- leaflet js -->
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
@@ -587,6 +617,18 @@
                 gender: row['Gender'],
                 language: row['Language'],
                 pleiades: row['Martyrdom Pleiades Id'],
+                source: row['The Earliest Source'],
+                source_date: row['Date of the Source'],
+                hagiography: row['Hagiography'],
+                hagiography_date_1: row['Hagiography Date'],
+                hagiography_2: row['Hagiography #2'],
+                hagiography_date_2: row['Hagiography #2 Date'],
+                hagiography_3: row['Hagiography #3'],
+                hagiography_date_3: row['Hagiography #3 Date'],
+                homily: row['Homily #1'],
+                homily_date_1: row['Homily #1 Date'],
+                homily_2: row['Homily #2'],
+                homily_date_2: row['Homily #2 Date'],
                 kind: 'martyr'
               },
               geometry: {
@@ -1068,7 +1110,19 @@
                 newContent += '<h3>' + featureLayer.feature.properties.name + '</h3><br>' +
                               '<h7><b>Martyred:</b> ' + featureLayer.feature.properties.death_min + ' - ' + featureLayer.feature.properties.death_max + ' CE</h7>' +
                               '<br><h7><b>Martyr Location:</b> ' + featureLayer.feature.properties.location + '</h7>' +
-                              '<br><h7><b>Pleiades URL:</b> <a href="https://pleiades.stoa.org/places/' + featureLayer.feature.properties.pleiades + '" target="_blank">' + featureLayer.feature.properties.pleiades + '</a></h7>';
+                              '<br><h7><b>Pleiades URL:</b> <a href="https://pleiades.stoa.org/places/' + featureLayer.feature.properties.pleiades + '" target="_blank">' + featureLayer.feature.properties.pleiades + '</a></h7>' +
+                              '<br><br><h7><b>Earliest Source:</b> ' + featureLayer.feature.properties.source + '</h7>' +
+                              '<br><h7><b>Source Date:</b> ' + featureLayer.feature.properties.source_date + '</h7>' +
+                              '<br><br><h7><b>Hagiography:</b> ' + featureLayer.feature.properties.hagiography + '</h7>' +
+                              '<br><h7><b>Date:</b> ' + featureLayer.feature.properties.hagiography_date_1 + '</h7>' +
+                              '<br><br><h7><b>Hagiography:</b> ' + featureLayer.feature.properties.hagiography_2 + '</h7>' +
+                              '<br><h7><b>Date:</b> ' + featureLayer.feature.properties.hagiography_date_2 + '</h7>' +
+                              '<br><br><h7><b>Hagiography:</b> ' + featureLayer.feature.properties.hagiography_3 + '</h7>' +
+                              '<br><h7><b>Date:</b> ' + featureLayer.feature.properties.hagiography_date_3 + '</h7>' +
+                              '<br><br><h7><b>Homily:</b> ' + featureLayer.feature.properties.homily + '</h7>' +
+                              '<br><h7><b>Date:</b> ' + featureLayer.feature.properties.homily_date_1 + '</h7>' +
+                              '<br><br><h7><b>Homily:</b> ' + featureLayer.feature.properties.homily_2 + '</h7>' +
+                              '<br><h7><b>Date:</b> ' + featureLayer.feature.properties.homily_date_2 + '</h7>';
             }
 
             // If the feature is a cult
@@ -1110,7 +1164,8 @@
                   }
               };
           };
-          
+
+/*          
           // Create a legend for the markers layers
           const legend = L.control({
             position: 'bottomright'
@@ -1132,6 +1187,7 @@
           };
 
           legend.addTo(map);
+*/          
 
         }
 
