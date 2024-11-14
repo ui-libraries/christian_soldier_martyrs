@@ -1,2 +1,2 @@
-# degerli_cult_of_saints
+# Cults of Late Antique Christian Soldier Martyrs
 Summer Fellowship Project
