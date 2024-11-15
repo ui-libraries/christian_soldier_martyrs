@@ -23,6 +23,9 @@
   <link rel="stylesheet" href="src/leaflet-sidebar.css" />
   <!-- for fullscreen button -->
   <link rel="stylesheet" href="src/Control.FullScreen.css" />
+  <!-- for marker clusters -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
   <!-- custom style here -->
   <style type="text/css">
     /* Set the page and body parameters */
@@ -356,7 +359,7 @@
         </div>
         <div id="collapsibleContent">
           </b><br>
-          <h4 class="details">This map, based on the earliest Greek, Latin, Coptic, Syriac, Armenian, and Georgian records of Christian Soldier Martyrs, where there cults spread, and the identified shrine sites, spanning from the second to seventh centuries CE.</h4>
+          <h4 class="details">This map, based on the earliest Greek, Latin, Coptic, Syriac, Armenian, and Georgian records of Christian Soldier Martyrs illustrates the locations where their cults spread, and the identified shrine sites, spanning from the second to seventh centuries CE.</h4>
           <!--<br>
           <h4 class="instructions">Instructions for using the map here.</h4>-->
           <br>
@@ -449,6 +452,8 @@
   <script src="src/leaflet.activearea.js"></script>
   <!-- for fullscreen button -->
   <script src="src/Control.FullScreen.js"></script>
+  <!-- for marker clusters -->
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
   <!-- javascript below -->
   <script>
     // Initialize the map
@@ -554,14 +559,18 @@
           let names = [];
           // Declare a global variable to hold the martyr locations layer
           let martyrlocLayer;
-          // Define an empty layer to hold the grouped martyrs
-          let groupedMartyrs = L.featureGroup();
+          
+          
           // Define an empty layer to hold the selected martyrs
-          let selectedMartyrs = L.featureGroup().addTo(map);
+          let selectedMartyrs = L.featureGroup();
           // Define an empty layer to hold the selected cults
-          let selectedCults = L.featureGroup().addTo(map);
+          let selectedCults = L.featureGroup();
           // Define an empty layer to hold the selected shrines
-          let selectedShrines = L.featureGroup().addTo(map);
+          let selectedShrines = L.featureGroup();
+
+          // Define an empty layer to hold the grouped martyrs
+          let groupedMartyrs = L.layerGroup([selectedMartyrs, selectedCults, selectedShrines]).addTo(map);
+
           // define sidebar info
           const info = document.getElementById('content-info');
           // Define the name dropdown menu
@@ -750,7 +759,7 @@
               let currentYear = $('.slider').val();
               // Add layers to the groupedMartyrs layer
               if (year <= currentYear) {
-                groupedMartyrs.addLayer(layer);
+                //groupedMartyrs.addLayer(layer);
                 selectedMartyrs.addLayer(layer);
               }
             }         
@@ -801,7 +810,7 @@
               let currentYear = $('.slider').val();
               // Add layers to the groupedMartyrs layer
               if (year <= currentYear) {
-                groupedMartyrs.addLayer(layer);
+                //groupedMartyrs.addLayer(layer);
                 selectedCults.addLayer(layer);
               }              
             }          
@@ -852,7 +861,7 @@
               let currentYear = $('.slider').val();
               // Add layers to the groupedMartyrs layer
               if (year <= currentYear) {
-                groupedMartyrs.addLayer(layer);
+                //groupedMartyrs.addLayer(layer);
                 selectedShrines.addLayer(layer);
               }
             }
@@ -1064,6 +1073,7 @@
                 selectedShrines.addLayer(layer);
               }
             });
+
           };          
 
           // Define a function to fit markers within the visible window
@@ -1163,7 +1173,7 @@
                       coordinates: [lng, lat]
                   }
               };
-          };       
+          };                 
 
         }
 
