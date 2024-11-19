@@ -645,7 +645,7 @@
             // Add the feature to the geojson object
             martyrdom.features.push(martyrFeature);
           };
-
+/*
           for (let i = 0; i < data.length; i++) {
             // Define variables
             let row = data[i];
@@ -682,6 +682,33 @@
             // Add the feature to the geojson object
             cult.features.push(cultFeature);
           };
+*/
+          // Process each row and add features to the GeoJSON object
+          data.forEach(row => {
+            const cultCoords1 = row['Coordinate of the Cult 1'];
+            const cultCoords2 = row['Coordinate of the Cult 2'];
+            const cultCoords3 = row['Coordinate of the Cult 3'];
+            const cultCoords4 = row['Coordinate of the Cult 4'];
+            const cultCoords5 = row['Coordinate of the Cult 5'];
+            const cultCoords6 = row['Coordinate of the Cult 6'];
+            const cultCoords7 = row['Coordinate of the Cult 7'];
+
+            const cultFeature1 = createCultFeature(row, cultCoords1, 'Place of Cult 1', 'Cult Pleiades Id');
+            const cultFeature2 = createCultFeature(row, cultCoords2, 'Place of Cult 1', 'Cult Pleiades Id');
+            const cultFeature3 = createCultFeature(row, cultCoords3, 'Place of Cult 1', 'Cult Pleiades Id');
+            const cultFeature4 = createCultFeature(row, cultCoords4, 'Place of Cult 1', 'Cult Pleiades Id');
+            const cultFeature5 = createCultFeature(row, cultCoords5, 'Place of Cult 1', 'Cult Pleiades Id');
+            const cultFeature6 = createCultFeature(row, cultCoords6, 'Place of Cult 1', 'Cult Pleiades Id');
+            const cultFeature7 = createCultFeature(row, cultCoords7, 'Place of Cult 1', 'Cult Pleiades Id');
+
+            if (cultFeature1) cult.features.push(cultFeature1);
+            if (cultFeature2) cult.features.push(cultFeature2);
+            if (cultFeature3) cult.features.push(cultFeature3);
+            if (cultFeature4) cult.features.push(cultFeature4);
+            if (cultFeature5) cult.features.push(cultFeature5);
+            if (cultFeature6) cult.features.push(cultFeature6);
+            if (cultFeature7) cult.features.push(cultFeature7);
+          });
 
           // Process each row and add features to the GeoJSON object
           data.forEach(row => {
@@ -1160,7 +1187,7 @@
             info.innerHTML += newContent; // Append content to the existing sidebar content
           };
 
-          // Helper function to create a GeoJSON feature
+          // Helper function to create a shrine feature
           function createShrineFeature(row, coords, locationKey, pleiadesKey) {
               if (!coords) return null;
               
@@ -1176,6 +1203,30 @@
                       language: row['Language'],
                       pleiades: row[pleiadesKey],
                       kind: 'shrine'
+                  },
+                  geometry: {
+                      type: 'Point',
+                      coordinates: [lng, lat]
+                  }
+              };
+          };
+
+          // Helper function to create a cult feature
+          function createCultFeature(row, coords, locationKey, pleiadesKey) {
+              if (!coords) return null;
+              
+              const [lat, lng] = coords.split(',').map(Number);
+              return {
+                  type: 'Feature',
+                  properties: {
+                      name: row['Name'],
+                      location: row[locationKey],
+                      death_max: row['Death Not After'],
+                      death_min: row['Death Not Before'],
+                      gender: row['Gender'],
+                      language: row['Language'],
+                      pleiades: row[pleiadesKey],
+                      kind: 'cult'
                   },
                   geometry: {
                       type: 'Point',
