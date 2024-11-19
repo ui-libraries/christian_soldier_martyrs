@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en" class="no-js">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Add a title to the page -->
+  <title>Cults of Late Antique Christian Soldier Martyrs</title>
+
+  <!-- link to Cormorant Garamond and Albert Sans fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+
+  <!-- leaflet css -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+  <!-- for the collapsible sidebar -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" />
+  <link rel="stylesheet" href="src/leaflet-sidebar.css" />
+  <!-- for fullscreen button -->
+  <link rel="stylesheet" href="src/Control.FullScreen.css" />
+  <!-- for marker clusters -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+  <!-- custom style here -->
+  <style type="text/css">
+    /* Set the page and body parameters */
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      font-family: "Albert Sans", sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+    }
+
+    /* Set map parameters */
+    #map {
+      position: fixed;
+      bottom: 0px;
+      width: 100%;
+      top: 0px;
+    }
+
+    /* Font styles */
+    h1 {
+      color: white;
+      display: inline-block;
+      margin-top: 0.5em;
+      margin-bottom: 0.0em;
+      margin-left: 0.8em;
+      margin-right: 0;
+      font-family: "Albert Sans", sans-serif;
+      font-weight: 300;
+    }
+
+    /* Define CSS variables for different font sizes */
+    :root {
+      --font-size-small: 11px;
+      /* Font size for small screens */
+      --font-size-medium: 16px;
+      /* Font size for medium screens */
+      --font-size-large: 18px;
+      /* Font size for large screens */
+    }
+
+    /* Apply default font size */
+    h1 {
+      font-size: var(--font-size-medium);
+    }
+
+    /* Adjust font size based on screen width */
+    /* For screens smaller than 765px, use the small font size */
+    @media (max-width: 764px) {
+      h1 {
+        font-size: var(--font-size-large);
+      }
+    }
+
+    /* Between 765px and 990px, use the small font size */
+    @media (min-width: 765px) and (max-width: 989px) {
+      h1 {
+        font-size: var(--font-size-small);
+      }
+    }
+
+    /* For screens larger than 1200px, use the large font size */
+    @media (min-width: 1200px) {
+      h1 {
+        font-size: var(--font-size-large);
+      }
+    }
+
+    h2 {
+      font-size: 12px;
+      color: white;
+      display: inline-block;
+      margin-top: 0.25em;
+      margin-bottom: 0.0em;
+      margin-left: 1.0em;
+      margin-right: 0;
+      font-family: "Albert Sans", sans-serif;
+      font-weight: 300;
+    }
+
+    h3 {
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 400;
+      font-size: 18px;
+      /*text-transform: uppercase;*/
+      /*margin-left: 1.1em;*/
+      margin-top: 0px;
+      margin-bottom: 0px;
+      margin-right: 0px;
+    }
+
+    h4 {
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    h5 {
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 400;
+      font-size: 18px;
+      margin: 0px;
+      /*text-transform: uppercase;*/
+    }
+
+    h6 {
+      font-family: "Albert Sans", sans-serif;
+      font-weight: 300;
+      font-size: 12px;
+      margin: 0px;
+    }
+
+    h7 {
+      font-family: "Albert Sans", sans-serif;
+      font-size: 14px;
+      /*margin-left: 1.4em;*/
+      margin-top: 0px;
+      margin-bottom: 0px;
+      margin-right: 0px;
+    }
+
+    /* custom sidebar css */
+    /* sidebar header */
+    .sidebar-header {
+      width: 100%;
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 400;
+      font-style: normal;
+      text-transform: uppercase;
+    }
+
+    /* sidebar icon */
+    i {
+      color: rgb(0, 0, 0);
+    }
+
+    /* sidebar about heading */
+    .about {
+      color: rgb(0, 0, 0);
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 400;
+      font-style: normal;
+      font-size: 18px;
+      margin-bottom: 0px;
+      margin-top: 0px;
+      margin-left: 0px;
+    }
+
+    /* selection heading */
+    .choose {
+      color: rgb(0, 0, 0);
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 400;
+      font-style: normal;
+      font-size: 18px;
+      margin-bottom: 0px;
+      margin-top: 0px;
+      margin-left: 0px;
+    }
+
+    /* sources header */
+    .sources {
+      color: rgb(0, 0, 0);
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 400;
+      font-style: normal;
+      font-size: 18px;
+      margin-bottom: 0px;
+      margin-top: 10px;
+      margin-left: 0px;
+      /*margin-left: 1.1em;*/
+    }
+
+    /* map info */
+    .details {
+      font-family: "Albert Sans", sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      margin-bottom: 0px;
+      margin-top: 0px;
+    }
+
+    .instructions {
+      font-family: "Albert Sans", sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      margin-bottom: 0px;
+      margin-top: 0px;
+    }
+
+    /* source list */
+    .sourceList {
+      font-family: "Albert Sans", sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      margin-bottom: 0px;
+      margin-top: 0px;
+      /*margin-left: 1.4em;*/
+    }
+
+    .content {
+      font-family: "Albert Sans", sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      margin-bottom: 0px;
+      margin-top: 0px;
+    }
+
+    .introbreak {
+      display: block;
+      margin-bottom: 1em;
+    }
+
+    /* collapsible div css */
+    .header {
+      display: flex;
+      align-items: center;
+    }
+
+    #collapseButton {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #333;
+      margin-right: 10px;
+      /* Add some spacing between the button and the h2 element */
+    }
+
+    #collapseButton .icon {
+      margin-right: 5px;
+    }
+
+    /* TEMPORAL SLIDER CSS */
+    /* Set the styles for the temporal slider container */
+    #temporal-slider-container {
+      display: flex;
+      align-items: center;
+      width: 250px;
+      /* Increase this value as needed */
+      height: 40px;
+      /* Adjust height if necessary */
+      padding: 5px;
+    }
+
+    /* Set temporal legend styles */
+    #temporal {
+      height: 25px;
+      width: 86px;
+      background-color: #FFFFFF;
+      border-radius: 3px;
+      box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+    }
+
+    /* Set the styles for the text span in the temporal legend */
+    #temporal span {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      /*margin-left: 10px;*/
+      /* vertically center the text */
+      line-height: 25px;
+      /* Add some padding to the left */
+      padding-left: 10px;
+    }
+
+    /* Set time slider styles */
+    #slider {
+      height: 25px;
+      margin-left: 10px;
+      background-color: #FFFFFF;
+      border-radius: 3px;
+      box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .slider {
+      -webkit-appearance: none;
+      width: 154px;
+      height: 5px;
+      background: #ddd;
+      outline: none;
+      opacity: 0.7;
+      transition: opacity .2s;
+    }
+
+    .slider:hover {
+      opacity: 1;
+    }
+
+    /* END TEMPORAL SLIDER CSS */
+
+    /* Set up the style for the legend */
+    .info.legend {
+      position: absolute;
+      bottom: 100px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.5);
+      padding: 5px;
+      font-family: Arial, sans-serif;
+    }
+
+    .info.legend h4 {
+      margin-top: 0.0em;
+      margin-bottom: 0.25em;
+      font-size: 18px;
+    }
+
+    .info.legend i {
+      margin-right: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="sidebar" class="sidebar collapsed">
+    <div class="sidebar-tabs">
+      <ul role="tablist">
+        <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
+      </ul>
+    </div>
+    <div class="sidebar-content">
+      <div class="sidebar-pane" id="home">
+        <h1 class="sidebar-header">The Martyrdom of the Saints<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1><br>
+        <br>
+        <div class="header">
+          <button id="collapseButton"><span class="icon"><i class="fas fa-chevron-up"></i></span></button>
+          <h2 class="about">About This Project</h2>
+        </div>
+        <div id="collapsibleContent">
+          </b><br>
+          <h4 class="details">This map, based on the earliest Greek, Latin, Coptic, Syriac, Armenian, and Georgian records of Christian Soldier Martyrs illustrates the locations where their cults spread, and the identified shrine sites, spanning from the second to seventh centuries CE.</h4>
+          <!--<br>
+            <h4 class="instructions">Instructions for using the map here.</h4>-->
+          <br>
+          <h4 class="content">For more information about this project, please contact <a href="mailto:hasanhuseyin-degerli@uiowa.edu">Hasan Degerli</a> at the University of Iowa.</h4>
+          <br><i>
+            <h4 class="details">Principal Investigator: Hasan Degerli, Ph.D. Candidate, Religious Studies, University of
+              Iowa</h4>
+          </i>
+          <p style="padding-bottom:0px"></p>
+        </div>
+        <div id="dropdown-instructions">
+          <p>
+          <h2 class="choose">Filter by Martyr:</h2>
+          </p>
+        </div>
+        <form id="map_parameters" name="map_parameters" action="#" accept-charset="utf-8" class="inlineForm">
+          <select id="name-select" class="div-toggle" data-target=".my-info-1">
+            <option value="0">No martyr selected</option>
+          </select>
+        </form>
+        <!-- Add a button to trigger the handleButtonClick() function -->
+        <div id="search-instructions">
+          <p>
+          <h2 class="choose">Reset or Zoom Out.</h2>
+          </p>
+        </div>
+        <!-- Wrap the buttons in a container div to control their layout -->
+        <div class="button-container">
+          <button id="resetButton">Reset</button>
+          <button id="zoomOutButton">Zoom Out</button>
+        </div>
+        <br>
+        <div id="sidebar-info" class="my-info-1">
+          <div id="content-info" class="contentinfo hide"></div>
+        </div>
+        <div id="sources">
+          <h2 class="sources">Sources</h2>
+          <br><br>
+          <h4 class="sourceList">Åhlfeldt, Johan. Digital Atlas of the Roman Empire, 2020. https://imperium.ahlfeldt.se.
+            <br><br>Bryan, Ward-Perkins. “The Cult of Saints in Late Antiquity.” The Cult of Saints, 2021. http://csla.history.ox.ac.uk.
+          </h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- map -->
+  <div id="map"></div>
+
+  <!-- TEMPORAL SLIDER -->
+  <!-- Temporal legend and slider container -->
+  <div id="temporal-slider-container">
+    <!-- Temporal legend -->
+    <div id="temporal">
+      <h5 class="txt-bold"><span id="span"></span></h5>
+    </div>
+
+    <!-- UI Slider -->
+    <div id="slider">
+      <input type="range" min="0" max="2024" value="2024" step="1" class="slider" />
+    </div>
+  </div>
+  <!-- END TEMPORAL SLIDER -->
+
+  <!-- Create the legend container -->
+  <div class="info legend">
+    <h4>Legend</h4>
+    <i class="fas fa-map-marker-alt" style="color: #4682B4"></i><span> Martyrdom</span><br>
+    <i class="fas fa-map-marker-alt" style="color: #C41E3A"></i><span> Cult</span><br>
+    <i class="fas fa-map-marker-alt" style="color: #4CBB17"></i><span> Shrine</span><br>
+  </div>
+
+  <!-- leaflet js -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+  <!-- d3js -->
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <!-- chroma -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.2.1/chroma.min.js"></script>
+  <!-- Papaparse for bringing in Google spreadsheet data -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js "></script>
+  <!-- sidebar -->
+  <script src="src/svg-icon.js"></script>
+  <script src="src/leaflet-sidebar.js"></script>
+  <script src="src/leaflet.activearea.js"></script>
+  <!-- for fullscreen button -->
+  <script src="src/Control.FullScreen.js"></script>
+  <!-- for marker clusters -->
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+  <!-- after Leaflet script -->
+  <script src="src/subgroup.js"></script>
+
+  <!-- javascript below -->
+  <script>
+    // Initialize the map
+    const map = L.map('map', {
+      center: [36.204722, 36.181667],
+      zoom: 5,
+      fullscreenControl: true,
+      fullscreenControlOptions: {
+        position: 'topright'
+      }
+    });
+    // add a basemap
+    const awmc = L.tileLayer('https://cawm.lib.uiowa.edu/tiles/{z}/{x}/{y}.png', {
+      maxZoom: 11
+    }).addTo(map);
+    // define a modern basemap
+    const modern = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    });
+    // Add a sidebar to the map
+    const sidebar = L.control.sidebar("sidebar").addTo(map);
+    sidebar.open("home");
+    // Define the sidebar element
+    const sidebarElement = document.getElementById('sidebar');
+    // Code to collapse about content
+    const collapseButton = document.getElementById('collapseButton'); // Define the collapse button
+    const collapsibleContent = document.getElementById('collapsibleContent'); // Define the collapsible content
+    // Add a click event listener to the button
+    collapseButton.addEventListener('click', function() {
+      // Check if the collapsible content is already open
+      if (collapsibleContent.style.display === 'none') {
+        // Show the collapsible content
+        collapsibleContent.style.display = 'block';
+        // Change the button icon
+        collapseButton.innerHTML = '<span class="icon"><i class="fas fa-chevron-up"></i></span>';
+      } else {
+        // Hide the collapsible content
+        collapsibleContent.style.display = 'none';
+        // Change the button icon
+        collapseButton.innerHTML = '<span class="icon"><i class="fas fa-chevron-down"></i></span>';
+      }
+    });
+    // Function to disable map zoom
+    function disableMapZoom() {
+      map.scrollWheelZoom.disable();
+    };
+    // Function to enable map zoom
+    function enableMapZoom() {
+      map.scrollWheelZoom.enable();
+    };
+    // Add event listener to disable map zoom when mouse is over the sidebar
+    sidebarElement.addEventListener('mouseover', disableMapZoom);
+    // Add event listener to enable map zoom when mouse leaves the sidebar
+    sidebarElement.addEventListener('mouseout', enableMapZoom);
+    // Listen for fullscreen change event
+    map.on('enterFullscreen', function() {
+      // When entering fullscreen, move the sidebar to the map container
+      map.getContainer().appendChild(sidebarElement);
+    });
+    map.on('exitFullscreen', function() {
+      // When exiting fullscreen, move the sidebar back to its original position
+      document.body.appendChild(sidebarElement);
+    });
+
+    // Define the Google Sheet URL
+    const gsheet = 'https://docs.google.com/spreadsheets/d/17D3v-4T7VpP1xEJqsHxzVuQVMDuz83iB0pYMxVXo4n4/export?format=csv&id=17D3v-4T7VpP1xEJqsHxzVuQVMDuz83iB0pYMxVXo4n4&gid=0';
+
+    // Define an empty array to hold the martyr names
+    let names = [];
+    // Define an empty array to store the years
+    let years = [];
+
+    // Create the marker cluster layer
+    let markerClusterLayer = L.markerClusterGroup(),
+        selectedMartyrs = L.featureGroup.subGroup(markerClusterLayer),// use `L.featureGroup.subGroup(parentGroup)` instead of `L.featureGroup()` or `L.layerGroup()`!
+        selectedCults = L.featureGroup.subGroup(markerClusterLayer),
+        selectedShrines = L.featureGroup.subGroup(markerClusterLayer),
+        control = L.control.layers(null, null, { collapsed: false });
+
+        markerClusterLayer.addTo(map);
+
+        control.addOverlay(selectedMartyrs, 'Martyrs');
+        control.addOverlay(selectedCults, 'Cults');
+        control.addOverlay(selectedShrines, 'Shrines');
+        control.addTo(map);
+
+        selectedMartyrs.addTo(map); // Adding to map now adds all child layers into the parent group.
+        selectedCults.addTo(map);
+        selectedShrines.addTo(map);
+
+    // Load the data asynchronously
+    d3.queue()
+      // Load the data
+      .defer(d3.json, 'data/roads.json')
+      // Call the drawMap function when the data is loaded
+      .await(drawMap);
+
+    // Function to draw the map
+    function drawMap(err, roads) {
+
+      // Define a geojson object to hold the roads data
+      const roadsLayer = L.geoJson(roads, {
+        style: function(feature) {
+          return {
+            // give the roads a dark red-orange color
+            color: '#8B0000',
+            // make semi-transparent lines
+            opacity: 0.25,
+            weight: 1
+          };
+        }
+      }).addTo(map);
+
+      // Parse the google sheet data
+      Papa.parse(gsheet, {
+        download: true,
+        header: true,
+
+        complete: function(results) {
+
+          // Define an empty geojson object for martyrdom
+          const martyrdom = {
+            type: 'FeatureCollection',
+            features: []
+          };
+
+          // Define an empty geojson object for cult 
+          const cult = {
+            type: 'FeatureCollection',
+            features: []
+          };
+
+          // Define an empty geojson object for shrine
+          const shrine = {
+            type: 'FeatureCollection',
+            features: []
+          };
+
+          // Define data
+          let data = results.data;
+
+          // Loop through each row in the data
+          for (let i = 0; i < data.length; i++) {
+            // Define variables
+            let row = data[i];
+            // Define the martyrdom coordinates
+            let martyrCoords = row['Coordinate of Martyrdom'];
+            // Skip the row if the martyrCoords is empty
+            if (martyrCoords === '') {
+              continue;
+            }
+            // Split the martyrCoords into an array
+            let martyrCoordsSplit = martyrCoords.split(',');
+            // Define the martyrLat 
+            let martyrLat = parseFloat(martyrCoordsSplit[0]).toString();
+            // Define the martyrLng
+            let martyrLng = parseFloat(martyrCoordsSplit[1]).toString();
+            // Define a new geojson feature object
+            const martyrFeature = {
+              type: 'Feature',
+              properties: {
+                name: row['Name'],
+                location: row['Place of Martyrdom'] + ', ' + row['Region of Martyrdom'],
+                death_max: row['Death Not After'],
+                death_min: row['Death Not Before'],
+                gender: row['Gender'],
+                language: row['Language'],
+                pleiades: row['Martyrdom Pleiades Id'],
+                source: row['The Earliest Source'],
+                source_date: row['Date of the Source'],
+                hagiography: row['Hagiography'],
+                hagiography_date_1: row['Hagiography Date'],
+                hagiography_2: row['Hagiography #2'],
+                hagiography_date_2: row['Hagiography #2 Date'],
+                hagiography_3: row['Hagiography #3'],
+                hagiography_date_3: row['Hagiography #3 Date'],
+                homily: row['Homily #1'],
+                homily_date_1: row['Homily #1 Date'],
+                homily_2: row['Homily #2'],
+                homily_date_2: row['Homily #2 Date'],
+                kind: 'martyr'
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [martyrLng, martyrLat]
+              }
+            };
+            // Add the feature to the geojson object
+            martyrdom.features.push(martyrFeature);
+
+          };
+
+          for (let i = 0; i < data.length; i++) {
+            // Define variables
+            let row = data[i];
+            // Define the cult coordinates
+            let cultCoords = row['Coordinate of the Cult 1'];
+            // Skip the row if the cultCoords is empty
+            if (cultCoords === '') {
+              continue;
+            }
+            // Split the cultCoords into an array
+            let cultCoordsSplit = cultCoords.split(',');
+            // Define the cultLat
+            let cultLat = parseFloat(cultCoordsSplit[0]).toString();
+            // Define the cultLng
+            let cultLng = parseFloat(cultCoordsSplit[1]).toString();
+            // Define a new geojson feature object
+            const cultFeature = {
+              type: 'Feature',
+              properties: {
+                name: row['Name'],
+                location: row['Place of Cult 1'],
+                death_max: row['Death Not After'],
+                death_min: row['Death Not Before'],
+                gender: row['Gender'],
+                language: row['Language'],
+                pleiades: row['Cult Pleiades Id'],
+                kind: 'cult'
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [cultLng, cultLat]
+              }
+            };
+            // Add the feature to the geojson object
+            cult.features.push(cultFeature);
+          };
+
+          // Process each row and add features to the GeoJSON object
+          data.forEach(row => {
+            const shrineCoords1 = row['Shrine 1 Coordinate'];
+            const shrineCoords2 = row['Shrine 2 Coordinate'];
+            const shrineCoords3 = row['Shrine 3 Coordinate'];
+            const shrineCoords4 = row['Shrine 4 Coordinate'];
+            const shrineCoords5 = row['Shrine 5 Coordinate'];
+            const shrineCoords6 = row['Shrine 6 Coordinate'];
+
+            const shrineFeature1 = createShrineFeature(row, shrineCoords1, 'Shrine 1 Location', 'Shrine 1 Pleiades');
+            const shrineFeature2 = createShrineFeature(row, shrineCoords2, 'Shrine 2 Location', 'Shrine 2 Pleiades');
+            const shrineFeature3 = createShrineFeature(row, shrineCoords3, 'Shrine 3 Location', 'Shrine 3 Pleiades');
+            const shrineFeature4 = createShrineFeature(row, shrineCoords4, 'Shrine 4 Location', 'Shrine 4 Pleiades');
+            const shrineFeature5 = createShrineFeature(row, shrineCoords5, 'Shrine 5 Location', 'Shrine 5 Pleiades');
+            const shrineFeature6 = createShrineFeature(row, shrineCoords6, 'Shrine 6 Location', 'Shrine 6 Pleiades');
+
+            if (shrineFeature1) shrine.features.push(shrineFeature1);
+            if (shrineFeature2) shrine.features.push(shrineFeature2);
+            if (shrineFeature3) shrine.features.push(shrineFeature3);
+            if (shrineFeature4) shrine.features.push(shrineFeature4);
+            if (shrineFeature5) shrine.features.push(shrineFeature5);
+            if (shrineFeature6) shrine.features.push(shrineFeature6);
+          });
+
+            // Define a leaflet layer for the geojson data
+            const martyrLayer = L.geoJson(martyrdom, {
+            pointToLayer: function (feature, latlng) {
+              // Create a blue marker
+              return L.marker(latlng, {
+                icon: L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                })
+              });
+            },
+            onEachFeature: function (feature, layer) {
+              // Push the name of the martyr to the names array
+              names.push(feature.properties.name);
+              // Define minYear of death
+              let year = parseInt(feature.properties.death_min);
+              // Push the minimum death year to the years array
+              years.push(year);
+              // Add a tooltip to each marker to display the martyrs' names
+              layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' CE<br>' + feature.properties.language + '</h6>');
+              // On mouseover, change the marker color
+              layer.on('mouseover', function (e) {
+                // Change the marker color
+                this.setIcon(L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                }));
+              });
+              // On mouseout, change the marker color back
+              layer.on('mouseout', function (e) {
+                // Change the marker color
+                this.setIcon(L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                }));
+              });
+              // Define the value in the slider
+              let currentYear = $('.slider').val();
+              // Add layers to the groupedMartyrs layer
+              if (year <= currentYear) {
+                selectedMartyrs.addLayer(layer);
+              }
+            }         
+          });
+
+          // Define a leaflet layer for the geojson data
+          const cultLayer = L.geoJson(cult, {
+            pointToLayer: function (feature, latlng) {
+              // Create a red marker
+              return L.marker(latlng, {
+                icon: L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                })
+              });
+            },
+            onEachFeature: function (feature, layer) {
+              // Define minYear of death
+              let year = parseInt(feature.properties.death_min);
+              // Add a tooltip to each marker to display the martyrs' names
+              layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' CE<br>' + feature.properties.language + '</h6>');
+              // On mouseover, change the marker color
+              layer.on('mouseover', function (e) {
+                // Change the marker color
+                this.setIcon(L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                }));
+              });
+              // On mouseout, change the marker color back
+              layer.on('mouseout', function (e) {
+                // Change the marker color
+                this.setIcon(L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                }));
+              });
+              // Define the value in the slider
+              let currentYear = $('.slider').val();
+              // Add layers to the groupedMartyrs layer
+              if (year <= currentYear) {
+                selectedCults.addLayer(layer);
+              }              
+            }          
+          }); 
+          
+          // Define a leaflet layer for the geojson data
+          const shrineLayer = L.geoJson(shrine, {
+            pointToLayer: function (feature, latlng) {
+              // Create a green marker
+              return L.marker(latlng, {
+                icon: L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                })
+              });
+            },
+            onEachFeature: function (feature, layer) {
+              // Define minYear of death
+              let year = parseInt(feature.properties.death_min);
+              // Add a tooltip to each marker to display the martyrs' names
+              layer.bindTooltip('<div style="max-width: 250px; width: max-content; white-space: normal;"><h5>' + feature.properties.name + '</h5><hr><h6>' + feature.properties.location + '<br>Martyred: ' + feature.properties.death_min + ' - ' + feature.properties.death_max + ' CE<br>' + feature.properties.language + '</h6>');
+              // On mouseover, change the marker color
+              layer.on('mouseover', function (e) {
+                // Change the marker color
+                this.setIcon(L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                }));
+              });
+              // On mouseout, change the marker color back
+              layer.on('mouseout', function (e) {
+                // Change the marker color
+                this.setIcon(L.icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  shadowSize: [41, 41]
+                }));
+              });
+              // Define the value in the slider
+              let currentYear = $('.slider').val();
+              // Add layers to the groupedMartyrs layer
+              if (year <= currentYear) {
+                selectedShrines.addLayer(layer);
+              }
+            }
+          });         
+
+        }
+
+      });
+
+      markerClusterLayer.getLayers().forEach(function (cluster) {
+        if (cluster instanceof L.Marker) {
+          // This is a marker directly (not inside a cluster)
+          console.log(cluster);
+        } else if (cluster instanceof L.MarkerCluster) {
+          // This is a marker cluster; you can access markers inside it
+          cluster.getAllChildMarkers().forEach(function (marker) {
+            console.log(marker); // This is a single marker inside the cluster
+          });
+        }
+      });
+
+    };
+
+    // Helper function to create a GeoJSON feature
+    function createShrineFeature(row, coords, locationKey, pleiadesKey) {
+      if (!coords) return null;
+
+      const [lat, lng] = coords.split(',').map(Number);
+      return {
+        type: 'Feature',
+        properties: {
+          name: row['Name'],
+          location: row[locationKey],
+          death_max: row['Death Not After'],
+          death_min: row['Death Not Before'],
+          gender: row['Gender'],
+          language: row['Language'],
+          pleiades: row[pleiadesKey],
+          kind: 'shrine'
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [lng, lat]
+        }
+      };
+    };
+  </script>
+
+</body>
+
+</html>
