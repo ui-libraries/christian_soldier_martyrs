@@ -454,6 +454,8 @@
   <script src="src/Control.FullScreen.js"></script>
   <!-- for marker clusters -->
   <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+  <!-- after Leaflet script -->
+  <script src="src/subgroup.js"></script>
   <!-- javascript below -->
   <script>
     // Initialize the map
@@ -559,17 +561,12 @@
           let names = [];
           // Declare a global variable to hold the martyr locations layer
           let martyrlocLayer;
-          
-          
-          // Define an empty layer to hold the selected martyrs
-          let selectedMartyrs = L.featureGroup();
-          // Define an empty layer to hold the selected cults
-          let selectedCults = L.featureGroup();
-          // Define an empty layer to hold the selected shrines
-          let selectedShrines = L.featureGroup();
 
-          // Define an empty layer to hold the grouped martyrs
-          let groupedMartyrs = L.layerGroup([selectedMartyrs, selectedCults, selectedShrines]).addTo(map);
+          // Create the marker cluster layer
+          let markerClusterLayer = L.markerClusterGroup(),
+              selectedMartyrs = L.featureGroup.subGroup(markerClusterLayer),// use `L.featureGroup.subGroup(parentGroup)` instead of `L.featureGroup()` or `L.layerGroup()`!
+              selectedCults = L.featureGroup.subGroup(markerClusterLayer),
+              selectedShrines = L.featureGroup.subGroup(markerClusterLayer);
 
           // define sidebar info
           const info = document.getElementById('content-info');
@@ -757,9 +754,9 @@
               });
               // Define the value in the slider
               let currentYear = $('.slider').val();
-              // Add layers to the groupedMartyrs layer
+              // Add layers to the markerClusterLayer layer
               if (year <= currentYear) {
-                //groupedMartyrs.addLayer(layer);
+                //markerClusterLayer.addLayer(layer);
                 selectedMartyrs.addLayer(layer);
               }
             }         
@@ -808,9 +805,9 @@
               });
               // Define the value in the slider
               let currentYear = $('.slider').val();
-              // Add layers to the groupedMartyrs layer
+              // Add layers to the markerClusterLayer layer
               if (year <= currentYear) {
-                //groupedMartyrs.addLayer(layer);
+                //markerClusterLayer.addLayer(layer);
                 selectedCults.addLayer(layer);
               }              
             }          
@@ -859,9 +856,9 @@
               });
               // Define the value in the slider
               let currentYear = $('.slider').val();
-              // Add layers to the groupedMartyrs layer
+              // Add layers to the markerClusterLayer layer
               if (year <= currentYear) {
-                //groupedMartyrs.addLayer(layer);
+                //markerClusterLayer.addLayer(layer);
                 selectedShrines.addLayer(layer);
               }
             }
@@ -908,8 +905,8 @@
             info.innerHTML = ''; // Clear the content
             // Get the selected name
             const selectedName = nameSelect.value;
-            // Clear the groupedMartyrs layer
-            groupedMartyrs.clearLayers();
+            // Clear the markerClusterLayer layer
+            markerClusterLayer.clearLayers();
             // Clear the selectedMartyrs layer
             selectedMartyrs.clearLayers();
             // Clear the selectedCults layer
@@ -922,8 +919,8 @@
               layer.eachLayer(function (featureLayer) {
                 // Check if the layer name matches the selected name
                 if (featureLayer.feature.properties.name === selectedName) {
-                  // Add the layer to the groupedMartyrs layer
-                  groupedMartyrs.addLayer(featureLayer);
+                  // Add the layer to the markerClusterLayer layer
+                  markerClusterLayer.addLayer(featureLayer);
                   // Open the sidebar
                   sidebar.open('home');
                   // Call the updateSidebarContent function
@@ -947,7 +944,7 @@
               });
             });
             // Call the adjustMapBounds function
-            adjustMapBounds(map, groupedMartyrs, sidebarElement);
+            adjustMapBounds(map, markerClusterLayer, sidebarElement);
           });
 
           // Listen for a window resize event
@@ -978,19 +975,31 @@
             'max': maxYear
           });
 
-          // Create a layer control and add the roads as an overlay
+          // Define the basemaps for the layer control
           const baseMaps = {
             "Ancient World Map": awmc,
             "Modern World Map": modern
           };
-          const overlayMaps = {
-            "Roads": roadsLayer,
-            "Site of Martyrdom": selectedMartyrs,
-            "Site of Cult": selectedCults,
-            "Site of Shrine": selectedShrines
-          };
-          // Add the layer control
-          L.control.layers(baseMaps, overlayMaps).addTo(map);      
+          
+          // Define the layer control
+          const control = L.control.layers(baseMaps, null, { collapsed: false });
+
+          // Add the markerClusterLayer layer to the map
+          markerClusterLayer.addTo(map);
+
+          // Add overlays to the layer control
+          control.addOverlay(roadsLayer, 'Roads');
+          control.addOverlay(selectedMartyrs, 'Site of Martyrdom');
+          control.addOverlay(selectedCults, 'Site of Cult');
+          control.addOverlay(selectedShrines, 'Site of Shrine');
+          
+          // Add the layer control to the map
+          control.addTo(map);
+
+          // Adding to map now adds all child layers into the parent group
+          selectedMartyrs.addTo(map);
+          selectedCults.addTo(map);
+          selectedShrines.addTo(map);          
 
           // Redefine currentYear
           let currentYear = $('.slider').val();
@@ -1077,7 +1086,7 @@
           };          
 
           // Define a function to fit markers within the visible window
-          function adjustMapBounds(map, groupedMartyrs, sidebarElement) {
+          function adjustMapBounds(map, markerClusterLayer, sidebarElement) {
 
             // Get the right side of the sidebar
             let sidebarRight = sidebarElement.getBoundingClientRect().right;
@@ -1092,11 +1101,11 @@
             });
 
             // Using this new left-hand side, fit the map to the markers
-            if (groupedMartyrs.getLayers().length > 0) {
+            if (markerClusterLayer.getLayers().length > 0) {
               // Initialize an empty LatLngBounds object
               let bounds = L.latLngBounds();
-              // Loop through the groupedMartyrs layer to get the bounds
-              groupedMartyrs.eachLayer(function (layer) {
+              // Loop through the markerClusterLayer layer to get the bounds
+              markerClusterLayer.eachLayer(function (layer) {
                 bounds.extend(layer.getLatLng());
               });
               // Fit the map to the bounds
